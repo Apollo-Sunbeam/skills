@@ -13,7 +13,7 @@
         .matchplan-card { transition: transform 0.2s ease, box-shadow 0.2s ease; font-weight: 600; }
         .matchplan-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .scroll-hide::-webkit-scrollbar { display: none; }
-        .tab-active { border-bottom: 3px solid #0050aa; color: #0050aa; font-weight: 700; }
+        .tab-active { border-bottom: 3px solid #fff000; color: #fff000; font-weight: 700; }
         .lidl-blue { background-color: #0050aa; }
         .text-lidl-blue { color: #0050aa; }
     </style>
@@ -22,19 +22,16 @@
 
     <nav class="lidl-blue text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
+            <div class="flex h-16 items-center">
                 <div class="flex items-center space-x-3">
                     <img src="<?= logoSrc ?>" alt="Lidl Logo" class="h-12 w-12 object-contain bg-white p-0.5 rounded shadow-sm" onerror="this.style.display='none'">
                     <span class="text-xl font-bold tracking-tight uppercase">GB Regional Strategy Meetings</span>
                 </div>
-                <div class="hidden md:flex space-x-8 text-sm font-medium">
-                    <button id="btn-summary" onclick="switchTab('summary')" class="tab-active py-5 px-1 border-b-2 border-transparent hover:text-yellow-300">Executive Summary</button>
-                    <button id="btn-explorer" onclick="switchTab('explorer')" class="py-5 px-1 border-b-2 border-transparent hover:text-yellow-300">Matchplan Review</button>
-                    <button id="btn-regional" onclick="switchTab('regional')" class="py-5 px-1 border-b-2 border-transparent hover:text-yellow-300">Regional Detail</button>
-                </div>
-                <button onclick="openFormModal()" class="bg-yellow-400 hover:bg-yellow-300 text-blue-900 px-4 py-2 rounded-lg text-sm font-bold shadow transition-colors">
-                    ➕ Add Strategy Point
-                </button>
+            </div>
+            <div class="flex space-x-6 overflow-x-auto scroll-hide whitespace-nowrap text-sm font-medium">
+                <button id="btn-summary" onclick="switchTab('summary')" class="tab-active py-3 px-1 border-b-2 border-transparent hover:text-yellow-300">Executive Summary</button>
+                <button id="btn-explorer" onclick="switchTab('explorer')" class="py-3 px-1 border-b-2 border-transparent hover:text-yellow-300">Matchplan Review</button>
+                <button id="btn-regional" onclick="switchTab('regional')" class="py-3 px-1 border-b-2 border-transparent hover:text-yellow-300">Regional Detail</button>
             </div>
         </div>
     </nav>
@@ -44,17 +41,14 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <section id="tab-summary" class="tab-content block">
-            <div class="mb-8 flex justify-between items-end">
-                <div>
-                    <h1 class="text-3xl font-bold text-slate-900">GB Regional Strategy Meetings Overview</h1>
-                    <p class="mt-2 text-slate-600 max-w-3xl italic">Aggregated executive dashboard managing live priorities across operational cycles.</p>
-                </div>
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-slate-900">Executive Summary</h1>
             </div>
 
             <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-600 mb-8">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
                     <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider">📅 Remaining Upcoming Meetings Schedule</h2>
-                    <span class="text-xs text-slate-400 italic">Click a deck slot to open draft workspace assets</span>
+                    <span class="text-xs text-slate-400 italic">Click any region to open the draft template</span>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                     <a href="https://drive.google.com/drive/folders/1SsALprpEJEkjeDQDRaBxgFYVl3jBr2Wl" target="_blank" class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 p-3 rounded-lg text-center transition-all group">
@@ -103,6 +97,11 @@
         </section>
 
         <section id="tab-explorer" class="tab-content hidden">
+            <div class="flex justify-end mb-4">
+                <button onclick="openFormModal()" class="bg-yellow-400 hover:bg-yellow-300 text-blue-900 px-4 py-2 rounded-lg text-sm font-bold shadow transition-colors">
+                    ➕ Add Regional Point
+                </button>
+            </div>
             <div class="w-full bg-white p-4 rounded-xl border border-slate-200 mb-8 shadow-sm flex justify-center">
                 <img src="<?= matchplanSrc ?>" alt="Matchplan Schematic Review Map" class="max-h-64 object-contain rounded-lg" onerror="this.style.display='none'">
             </div>
@@ -159,6 +158,11 @@
         </section>
 
         <section id="tab-regional" class="tab-content hidden">
+            <div class="flex justify-end mb-4">
+                <button onclick="openFormModal()" class="bg-yellow-400 hover:bg-yellow-300 text-blue-900 px-4 py-2 rounded-lg text-sm font-bold shadow transition-colors">
+                    ➕ Add Regional Point
+                </button>
+            </div>
             <div id="region-chips-container" class="flex flex-wrap gap-2 mb-10 overflow-x-auto pb-2 scroll-hide"></div>
             <div id="region-content-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
@@ -167,7 +171,7 @@
     <div id="formModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-200">
             <div class="lidl-blue p-4 text-white flex justify-between items-center">
-                <h3 id="modalTitle" class="text-lg font-bold">Add Strategy Entry</h3>
+                <h3 id="modalTitle" class="text-lg font-bold">Add Regional Point</h3>
                 <button onclick="closeFormModal()" class="text-xl font-bold hover:text-yellow-300">✕</button>
             </div>
             <form id="entryForm" onsubmit="saveEntry(event)" class="p-6 space-y-4">
@@ -418,14 +422,14 @@
             const entry = id !== null ? findEntry(id) : null;
 
             if (entry) {
-                document.getElementById('modalTitle').innerText = "Edit Strategy Entry";
+                document.getElementById('modalTitle').innerText = "Edit Regional Point";
                 document.getElementById('editId').value = entry.id;
                 document.getElementById('formRegion').value = entry.region;
                 document.getElementById('formSection').value = normalizePillar(entry.section);
                 document.getElementById('formTopic').value = entry.topic;
                 document.getElementById('formSuggestion').value = entry.suggestion;
             } else {
-                document.getElementById('modalTitle').innerText = "Add Strategy Entry";
+                document.getElementById('modalTitle').innerText = "Add Regional Point";
                 document.getElementById('editId').value = "";
             }
             modal.classList.remove('hidden');
