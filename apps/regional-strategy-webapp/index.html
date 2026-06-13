@@ -7,7 +7,7 @@
    <script src="https://cdn.tailwindcss.com"></script>
    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
    <style>
-       @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700&display=swap');
+       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
        .chart-container { position: relative; width: 100%; height: 350px; max-height: 400px; }
        .matchplan-card { transition: transform 0.15s ease, box-shadow 0.15s ease; font-weight: 700; }
@@ -252,7 +252,7 @@
    <div id="formModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-200">
            <div class="lidl-blue p-4 text-white flex justify-between items-center">
-               <h3 id="modalTitle" class="text-lg font-bold">Add Strategy Entry</h3>
+               <h3 id="modalTitle" class="text-lg font-bold">Add Regional Point</h3>
                <button onclick="closeFormModal()" class="text-xl font-bold hover:text-yellow-300">✕</button>
            </div>
            <form id="entryForm" onsubmit="saveEntry(event)" class="p-6 space-y-4">
@@ -715,14 +715,14 @@
            const entry = id !== null ? findEntry(id) : null;
 
            if (entry) {
-               document.getElementById('modalTitle').innerText = "Edit Strategy Entry";
+               document.getElementById('modalTitle').innerText = "Edit Regional Point";
                document.getElementById('editId').value = entry.id;
                document.getElementById('formRegion').value = entry.region;
                document.getElementById('formSection').value = normalizePillar(entry.section.split('/')[0].trim());
                document.getElementById('formTopic').value = entry.topic;
                document.getElementById('formSuggestion').value = entry.suggestion;
            } else {
-               document.getElementById('modalTitle').innerText = "Add Strategy Entry";
+               document.getElementById('modalTitle').innerText = "Add Regional Point";
                document.getElementById('editId').value = "";
            }
            modal.classList.remove('hidden');
