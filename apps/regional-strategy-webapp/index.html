@@ -6,34 +6,36 @@
     <title>GB Regional Strategy Meetings</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
         .chart-container { position: relative; width: 100%; height: 350px; max-height: 400px; }
-        .matchplan-card { transition: transform 0.2s ease, box-shadow 0.2s ease; font-weight: 600; }
-        .matchplan-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .matchplan-card { transition: transform 0.15s ease, box-shadow 0.15s ease; font-weight: 700; }
+        .matchplan-card:hover { transform: translateY(-1px); }
         .scroll-hide::-webkit-scrollbar { display: none; }
-        .tab-active { border-bottom: 3px solid #0050aa; color: #0050aa; font-weight: 700; }
+        /* Active text color stays white, goes bold, and adds a brand-aligned yellow bottom border */
+        .tab-active { border-bottom: 3px solid #fff000; color: #ffffff; font-weight: 700; }
         .lidl-blue { background-color: #0050aa; }
         .text-lidl-blue { color: #0050aa; }
     </style>
 </head>
 <body class="bg-slate-50">
-
+    <!-- NAVIGATION SYSTEM (MOBILE & DESKTOP ACCESSIBILITY PROFILES) -->
     <nav class="lidl-blue text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center space-x-3">
-                    <img src="<?= logoSrc ?>" alt="Lidl Logo" class="h-12 w-12 object-contain bg-white p-0.5 rounded shadow-sm" onerror="this.style.display='none'">
-                    <span class="text-xl font-bold tracking-tight uppercase">GB Regional Strategy Meetings</span>
+            <div class="flex flex-col md:flex-row md:justify-between md:h-16 items-center py-3 md:py-0 space-y-3 md:space-y-0">
+                <div class="flex items-center space-x-3 w-full md:w-auto justify-center md:justify-start">
+                    <img src="<?= logoSrc ?>" alt="Lidl Logo" class="h-10 w-10 md:h-12 md:w-12 object-contain bg-white p-0.5 rounded shadow-sm" onerror="this.style.display='none'">
+                    <span class="text-sm md:text-xl font-bold tracking-tight uppercase text-center md:text-left">Lidl GB Regional Strategy Meetings</span>
                 </div>
-                <div class="hidden md:flex space-x-8 text-sm font-medium">
-                    <button id="btn-summary" onclick="switchTab('summary')" class="tab-active py-5 px-1 border-b-2 border-transparent hover:text-yellow-300">Executive Summary</button>
-                    <button id="btn-explorer" onclick="switchTab('explorer')" class="py-5 px-1 border-b-2 border-transparent hover:text-yellow-300">Matchplan Review</button>
-                    <button id="btn-regional" onclick="switchTab('regional')" class="py-5 px-1 border-b-2 border-transparent hover:text-yellow-300">Regional Detail</button>
+                <div class="flex space-x-4 md:space-x-8 text-xs md:text-sm font-medium w-full md:w-auto justify-center md:justify-start overflow-x-auto scroll-hide pb-1 md:pb-0">
+                    <button id="btn-summary" onclick="switchTab('summary')" class="tab-active py-1 md:py-5 px-1 border-b-2 border-transparent hover:text-yellow-300 whitespace-nowrap">Executive Summary</button>
+                    <button id="btn-explorer" onclick="switchTab('explorer')" class="py-1 md:py-5 px-1 border-b-2 border-transparent hover:text-yellow-300 whitespace-nowrap">Matchplan Review</button>
+                    <button id="btn-regional" onclick="switchTab('regional')" class="py-1 md:py-5 px-1 border-b-2 border-transparent hover:text-yellow-300 whitespace-nowrap">Regional Review</button>
                 </div>
-                <button onclick="openFormModal()" class="bg-yellow-400 hover:bg-yellow-300 text-blue-900 px-4 py-2 rounded-lg text-sm font-bold shadow transition-colors">
-                    ➕ Add Strategy Point
+                <button id="btn-add-point" onclick="openFormModal()" class="hidden bg-[#c1e0ff] hover:bg-[#a6d1ff] text-[#0050aa] px-4 py-2 rounded-lg text-xs md:text-sm font-bold shadow transition-colors w-full md:w-auto text-center">
+                    ➕ Add Regional Point
                 </button>
             </div>
         </div>
@@ -42,142 +44,221 @@
     <div id="toast" class="fixed top-20 right-4 z-[60] hidden max-w-sm px-4 py-3 rounded-lg shadow-lg text-sm font-semibold"></div>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
+        <!-- SECTION 1: EXECUTIVE SUMMARY -->
         <section id="tab-summary" class="tab-content block">
-            <div class="mb-8 flex justify-between items-end">
-                <div>
-                    <h1 class="text-3xl font-bold text-slate-900">GB Regional Strategy Meetings Overview</h1>
-                    <p class="mt-2 text-slate-600 max-w-3xl italic">Aggregated executive dashboard managing live priorities across operational cycles.</p>
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-slate-900">GB Regional Strategy Meetings Overview</h1>
+                <p class="mt-2 text-sm text-slate-600 w-full leading-relaxed whitespace-pre-line">This page provides a summary that will update automatically as each meeting is completed.
+Use the menu at the top to access two different ways of reviewing the points made during the meetings.</p>
+            </div>
+
+            <!-- COMPLETED MEETINGS TIMELINE TILE -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border-t-4 border-emerald-600 mb-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
+                    <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center">
+                        <span class="mr-1.5">✅</span> Completed Meetings
+                    </h2>
+                    <span class="text-[11px] text-slate-400 italic">Click any Region to view the finalized presentation slidedeck</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
+                    <a href="https://docs.google.com/presentation/d/13UQ0TuQaA4ZY0XqV5rQyHUFFgKGK2iYwB8yz6ZjqGTE/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 py-1 px-2 rounded-lg text-center transition-all group">
+                        <div class="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600">WK16</div><div class="text-xs font-bold text-slate-800">PET</div>
+                    </a>
+                    <a href="https://docs.google.com/presentation/d/1Qah-uhZs17XMGgL38CsXrB6BEfNMf3vONREYjZjuTRA/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 py-1 px-2 rounded-lg text-center transition-all group">
+                        <div class="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600">WK17</div><div class="text-xs font-bold text-slate-800">EXE</div>
+                    </a>
+                    <a href="https://docs.google.com/presentation/d/1jkWtDPwIUjMDKpx6LKeAGnWJk8mbFcG83bNFwVtJpEw/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 py-1 px-2 rounded-lg text-center transition-all group">
+                        <div class="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600">WK18</div><div class="text-xs font-bold text-slate-800">MOT</div>
+                    </a>
+                    <a href="https://docs.google.com/presentation/d/1zMfou_mFo1j9ORlDEcNvOW2XOLcZmM-tVrHoQE8LGWI/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 py-1 px-2 rounded-lg text-center transition-all group">
+                        <div class="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600">WK20</div><div class="text-xs font-bold text-slate-800">NAY</div>
+                    </a>
+                    <a href="https://docs.google.com/presentation/d/1YCopoV_K7qspoVgttlacFMevSjWszxy9KflwV6ZInds/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 py-1 px-2 rounded-lg text-center transition-all group">
+                        <div class="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600">WK20</div><div class="text-xs font-bold text-slate-800">DON</div>
+                    </a>
+                    <a href="https://docs.google.com/presentation/d/1_TeiY_SuGWj-6JHV2nOIg3AFABdcijp7W9EGHBp_Xqg/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 py-1 px-2 rounded-lg text-center transition-all group">
+                        <div class="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600">WK21</div><div class="text-xs font-bold text-slate-800">WED</div>
+                    </a>
+                    <a href="https://docs.google.com/presentation/d/1WnEIW0bqfTeYH5CZJx7ifnGtAw1j1u8EefBlqEHQjOY/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 py-1 px-2 rounded-lg text-center transition-all group">
+                        <div class="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600">WK23</div><div class="text-xs font-bold text-slate-800">NFL</div>
+                    </a>
+                    <a href="https://docs.google.com/presentation/d/1rnII9mhh8CxOY0ZuWpL5wxJuFoe_Jex4eah82R5s86w/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 py-1 px-2 rounded-lg text-center transition-all group">
+                        <div class="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600">WK23</div><div class="text-xs font-bold text-slate-800">AVO</div>
+                    </a>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-600 mb-8">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
-                    <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider">📅 Remaining Upcoming Meetings Schedule</h2>
-                    <span class="text-xs text-slate-400 italic">Click a deck slot to open draft workspace assets</span>
+            <!-- UPCOMING MEETINGS TIMELINE TILE -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border-t-4 border-blue-600 mb-8">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
+                    <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center">
+                        <span class="mr-1.5">📅</span> Upcoming Meetings
+                    </h2>
+                    <span class="text-[11px] text-slate-400 italic">Click any Region to access the draft slidedeck</span>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                    <a href="https://drive.google.com/drive/folders/1SsALprpEJEkjeDQDRaBxgFYVl3jBr2Wl" target="_blank" class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 p-3 rounded-lg text-center transition-all group">
-                        <div class="text-xs font-bold text-slate-400 group-hover:text-blue-600">WK27</div><div class="text-sm font-bold text-slate-800">BEL</div>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+                    <a href="https://docs.google.com/presentation/d/1cKXczU-bV2uhNtkyMOSkte35_wwjzKGBf3MTS2Rtxts/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 py-1.5 px-3 rounded-lg text-center transition-all group flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400 group-hover:text-blue-600">WK27</span><span class="text-xs font-bold text-slate-800">BEL</span>
                     </a>
-                    <a href="https://drive.google.com/drive/folders/1SsALprpEJEkjeDQDRaBxgFYVl3jBr2Wl" target="_blank" class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 p-3 rounded-lg text-center transition-all group">
-                        <div class="text-xs font-bold text-slate-400 group-hover:text-blue-600">WK27</div><div class="text-sm font-bold text-slate-800">SOU</div>
+                    <a href="https://docs.google.com/presentation/d/1bWaQU30YnuYIBFLV7GDrtD3VI5hhYQOdFHO4aXNNaA0/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 py-1.5 px-3 rounded-lg text-center transition-all group flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400 group-hover:text-blue-600">WK27</span><span class="text-xs font-bold text-slate-800">SOU</span>
                     </a>
-                    <a href="https://drive.google.com/drive/folders/1SsALprpEJEkjeDQDRaBxgFYVl3jBr2Wl" target="_blank" class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 p-3 rounded-lg text-center transition-all group">
-                        <div class="text-xs font-bold text-slate-400 group-hover:text-blue-600">WK29</div><div class="text-sm font-bold text-slate-800">BRI</div>
+                    <a href="https://docs.google.com/presentation/d/1rnN65w_cZyWjBtGRzy7x8Dm0zor4ARjTQ1hemwVo_rM/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 py-1.5 px-3 rounded-lg text-center transition-all group flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400 group-hover:text-blue-600">WK29</span><span class="text-xs font-bold text-slate-800">BRI</span>
                     </a>
-                    <a href="https://drive.google.com/drive/folders/1SsALprpEJEkjeDQDRaBxgFYVl3jBr2Wl" target="_blank" class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 p-3 rounded-lg text-center transition-all group">
-                        <div class="text-xs font-bold text-slate-400 group-hover:text-blue-600">WK29</div><div class="text-sm font-bold text-slate-800">LTN</div>
+                    <a href="https://docs.google.com/presentation/d/1WnwZ8uCdF3aozr8rUG_9oxOv8pHGnv8WIUf_wNGTDt8/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 py-1.5 px-3 rounded-lg text-center transition-all group flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400 group-hover:text-blue-600">WK29</span><span class="text-xs font-bold text-slate-800">LTN</span>
                     </a>
-                    <a href="https://drive.google.com/drive/folders/1SsALprpEJEkjeDQDRaBxgFYVl3jBr2Wl" target="_blank" class="col-span-2 md:col-span-1 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 p-3 rounded-lg text-center transition-all group">
-                        <div class="text-xs font-bold text-slate-400 group-hover:text-blue-600">WK36</div><div class="text-sm font-bold text-slate-800">RUN</div>
+                    <a href="https://docs.google.com/presentation/d/1faiWtD2BSuOe1OTf3GBwDyWHtuPZnr4zwsf-mHxtAKo/edit?slide=id.g3bed07dde97_0_45#slide=id.g3bed07dde97_0_45" target="_blank" class="col-span-2 md:col-span-1 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 py-1.5 px-3 rounded-lg text-center transition-all group flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400 group-hover:text-blue-600">WK36</span><span class="text-xs font-bold text-slate-800">RUN</span>
                     </a>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-600">
-                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Regional Points</p>
-                    <p class="text-3xl font-bold text-slate-900 mt-1" id="stat-total">…</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-400">
-                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Areas of Matchplan Covered</p>
-                    <p class="text-3xl font-bold text-slate-900 mt-1">6</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-600">
-                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Regions Included So Far</p>
-                    <p class="text-3xl font-bold text-slate-900 mt-1" id="stat-regions">…</p>
                 </div>
             </div>
 
+            <!-- CHARTS GRID -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                 <div class="bg-white p-6 rounded-2xl shadow-sm">
-                    <h3 class="text-lg font-bold mb-6 flex items-center">📊 Suggestions by Matchplan Pillar</h3>
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-sm md:text-lg font-bold flex items-center">📊 Suggestions by Matchplan Area</h3>
+                        <div class="bg-slate-100 border border-slate-200 px-3 py-1 rounded-lg text-[10px] md:text-xs font-semibold text-slate-700">
+                            Total Regional Points: <span id="stat-total" class="font-bold text-blue-600 text-sm">…</span>
+                        </div>
+                    </div>
                     <div class="chart-container"><canvas id="pillarChart"></canvas></div>
                 </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm">
-                    <h3 class="text-lg font-bold mb-6 flex items-center">📍 Regional Participation</h3>
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-sm md:text-lg font-bold flex items-center">📍 Points per Region</h3>
+                        <div class="bg-slate-100 border border-slate-200 px-3 py-1 rounded-lg text-[10px] md:text-xs font-semibold text-slate-700">
+                            Meetings Completed: <span id="stat-regions" class="font-bold text-blue-600 text-sm">…</span>
+                        </div>
+                    </div>
                     <div class="chart-container"><canvas id="regionChart"></canvas></div>
                 </div>
             </div>
         </section>
 
+        <!-- SECTION 2: MATCHPLAN REVIEW -->
         <section id="tab-explorer" class="tab-content hidden">
-            <div class="w-full bg-white p-4 rounded-xl border border-slate-200 mb-8 shadow-sm flex justify-center">
-                <img src="<?= matchplanSrc ?>" alt="Matchplan Schematic Review Map" class="max-h-64 object-contain rounded-lg" onerror="this.style.display='none'">
+            <!-- HEADER BLOCK -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-slate-900">Matchplan Review</h1>
+                <p class="mt-2 text-sm text-slate-600 w-full leading-relaxed">Use this tab to drill into any area of the Matchplan, with the ability to filter by RDC and specific Focus Area. You can also search for a specific Regional point within the filters you have specified.</p>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-                <button id="p-all" onclick="setMatchplanPillar('all')" class="matchplan-card bg-blue-600 text-white p-3 rounded-xl text-center text-xs uppercase tracking-wider shadow-sm">All Pillars</button>
-                <button id="p-teamlidl" onclick="setMatchplanPillar('#teamlidl')" class="matchplan-card bg-white border text-blue-800 p-3 rounded-xl text-center text-xs tracking-wide">#teamlidl</button>
-                <button id="p-value" onclick="setMatchplanPillar('Value')" class="matchplan-card bg-white border text-yellow-800 p-3 rounded-xl text-center text-xs tracking-wide">Value</button>
-                <button id="p-range" onclick="setMatchplanPillar('Range')" class="matchplan-card bg-white border text-green-800 p-3 rounded-xl text-center text-xs tracking-wide">Range</button>
-                <button id="p-customer" onclick="setMatchplanPillar('Customer Experience')" class="matchplan-card bg-white border text-purple-800 p-3 rounded-xl text-center text-xs tracking-wide">Customer Experience</button>
-                <button id="p-regionality" onclick="setMatchplanPillar('Regionality')" class="matchplan-card bg-white border text-orange-800 p-3 rounded-xl text-center text-xs tracking-wide">Regionality</button>
-                <button id="p-opex" onclick="setMatchplanPillar('Operational Excellence')" class="col-span-2 md:col-span-1 lg:col-span-6 mt-2 lg:mt-0 matchplan-card bg-white border text-red-800 p-3 rounded-xl text-center text-xs tracking-wide">Operational Excellence</button>
+            <!-- PILLAR QUICK-FILTERS -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-6">
+                <button id="p-all" onclick="setMatchplanPillar('all')" class="matchplan-card p-3 rounded-xl text-center text-xs uppercase tracking-wider shadow-sm bg-white text-[#0050aa] border border-[#0050aa]">Full Matchplan</button>
+                <button id="p-teamlidl" onclick="setMatchplanPillar('#teamlidl')" class="matchplan-card bg-[#0050aa] text-white border border-transparent p-3 rounded-xl text-center text-xs tracking-wide">#teamlidl</button>
+                <button id="p-value" onclick="setMatchplanPillar('Value')" class="matchplan-card bg-[#0050aa] text-white border border-transparent p-3 rounded-xl text-center text-xs tracking-wide">Value</button>
+                <button id="p-range" onclick="setMatchplanPillar('Range')" class="matchplan-card bg-[#0050aa] text-white border border-transparent p-3 rounded-xl text-center text-xs tracking-wide">Range</button>
+                <button id="p-customer" onclick="setMatchplanPillar('Customer Experience')" class="matchplan-card bg-[#0050aa] text-white border border-transparent p-3 rounded-xl text-center text-xs tracking-wide">Customer Experience</button>
+                <button id="p-regionality" onclick="setMatchplanPillar('Regionality')" class="matchplan-card bg-[#0050aa] text-white border border-transparent p-3 rounded-xl text-center text-xs tracking-wide">Regionality</button>
+                <button id="p-opex" onclick="setMatchplanPillar('Operational Excellence')" class="matchplan-card bg-[#0050aa] text-white border border-transparent p-3 rounded-xl text-center text-xs tracking-wide">Operational Excellence</button>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50/70">
-                <div>
-                    <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Filter by Region</label>
-                    <select id="matrixRegionFilter" onchange="syncMatrixFilters()" class="w-full border px-3 py-2 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="all">All Regions</option>
-                    </select>
+            <!-- INTERACTIVE MULTI-SELECT CASCADING FILTER MATRIX -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6 bg-slate-50/70">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <!-- SELECT RDC MENU -->
+                    <div class="relative">
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Select RDC(s)</label>
+                        <button type="button" onclick="toggleMultiDropdown('rdcDropdown')" class="w-full border px-3 py-2 rounded-lg text-sm bg-white flex justify-between items-center outline-none focus:ring-2 focus:ring-blue-500">
+                            <span id="rdcDropdownLabel" class="truncate font-semibold text-slate-700">All RDCs</span>
+                            <span class="text-xs text-slate-400">▼</span>
+                        </button>
+                        <div id="rdcDropdown" class="hidden absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-40 p-2 space-y-1 scroll-hide">
+                            <!-- Injected by JavaScript -->
+                        </div>
+                    </div>
+                    <!-- FILTER BY FOCUS AREA MENU -->
+                    <div class="relative">
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Filter by Focus Area</label>
+                        <button type="button" onclick="toggleMultiDropdown('topicDropdown')" class="w-full border px-3 py-2 rounded-lg text-sm bg-white flex justify-between items-center outline-none focus:ring-2 focus:ring-blue-500">
+                            <span id="topicDropdownLabel" class="truncate font-semibold text-slate-700">All Focus Areas</span>
+                            <span class="text-xs text-slate-400">▼</span>
+                        </button>
+                        <div id="topicDropdown" class="hidden absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-40 p-2 space-y-1 scroll-hide">
+                            <!-- Injected dynamically based on relational split context -->
+                        </div>
+                    </div>
+                    <!-- SEARCH ENGINE INPUT -->
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Search for a Regional Point</label>
+                        <input type="text" id="globalSearch" oninput="syncMatrixFilters()" placeholder="Search terms..." class="w-full border px-3 py-2 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Filter by Operational Topic</label>
-                    <select id="matrixTopicFilter" onchange="syncMatrixFilters()" class="w-full border px-3 py-2 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="all">All Topics</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Global Content Search</label>
-                    <input type="text" id="globalSearch" oninput="syncMatrixFilters()" placeholder="Search terms..." class="w-full border px-3 py-2 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                <!-- MATRIX RESET BUTTON -->
+                <div class="flex justify-end mt-3 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="resetMatrixFilters()" class="text-xs text-[#0050aa] hover:text-blue-800 font-bold tracking-wide transition-colors flex items-center">
+                        🔄 Reset All Filters
+                    </button>
                 </div>
             </div>
 
+            <!-- RESPONSIVE WRAPPING DATA TABLE CONTAINER -->
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-                <div class="p-4 border-b border-slate-100 bg-slate-50">
-                    <h2 class="text-lg font-bold text-slate-800" id="explorer-title">Active Filter Results</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200">
+                <div class="w-full overflow-x-hidden">
+                    <table class="table-fixed w-full divide-y divide-slate-200">
                         <thead class="bg-slate-100">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Region</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Topic</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Regional Request</th>
-                                <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase">Actions</th>
+                                <th class="w-[12%] px-1 py-3 text-left text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">RDC(s)</th>
+                                <th class="w-[18%] px-1 py-3 text-left text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">Matchplan Area(s)</th>
+                                <th class="w-[20%] px-1 py-3 text-left text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">Focus Area(s)</th>
+                                <th class="w-[40%] px-2 py-3 text-left text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">Regional Points</th>
+                                <th class="w-[10%] px-1 py-3 text-right text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider"></th>
                             </tr>
                         </thead>
-                        <tbody id="strategy-table-body" class="bg-white divide-y divide-slate-100">
-                            <tr><td colspan="4" class="px-6 py-8 text-center text-sm text-slate-400 italic">Loading strategy points…</td></tr>
+                        <tbody id="strategy-table-body" class="bg-white divide-y divide-slate-100 text-slate-700">
+                            <tr><td colspan="5" class="px-2 py-8 text-center text-xs text-slate-400 italic">Loading strategy points…</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </section>
 
+        <!-- SECTION 3: REGIONAL REVIEW -->
         <section id="tab-regional" class="tab-content hidden">
-            <div id="region-chips-container" class="flex flex-wrap gap-2 mb-10 overflow-x-auto pb-2 scroll-hide"></div>
-            <div id="region-content-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <!-- HEADER BLOCK MODULE -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-slate-900">Regional View</h1>
+                <p class="mt-2 text-sm text-slate-600 w-full leading-relaxed">Select a region to see all points for that region.</p>
+            </div>
+
+            <!-- ADAPTIVE INTERACTIVE REGION REVIEWS GRID ROW -->
+            <div id="region-buttons-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2 mb-4">
+                <!-- Injected dynamically by script module -->
+            </div>
+
+            <!-- REGIONAL RESET CONTROLS BUTTON -->
+            <div class="flex justify-end mb-6 pb-2 border-b border-slate-200">
+                <button type="button" onclick="resetRegionalReviewFilters()" class="text-xs text-[#0050aa] hover:text-blue-800 font-bold tracking-wide transition-colors">
+                    🔄 Reset Filters
+                </button>
+            </div>
+
+            <!-- STRUCTURED REGIONAL FLOW GROUP CARDS CONTAINER -->
+            <div id="region-content-grid" class="space-y-8">
+                <!-- Sorted cards injected dynamically separated by horizontal rule breaks -->
+            </div>
         </section>
     </main>
 
+    <!-- DYNAMIC FORM MODAL (ADD & EDIT) -->
     <div id="formModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-200">
             <div class="lidl-blue p-4 text-white flex justify-between items-center">
-                <h3 id="modalTitle" class="text-lg font-bold">Add Strategy Entry</h3>
+                <h3 id="modalTitle" class="text-lg font-bold">Add Regional Point</h3>
                 <button onclick="closeFormModal()" class="text-xl font-bold hover:text-yellow-300">✕</button>
             </div>
             <form id="entryForm" onsubmit="saveEntry(event)" class="p-6 space-y-4">
                 <input type="hidden" id="editId" value="">
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Region / Business Week</label>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">RDC</label>
                     <select id="formRegion" class="w-full border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" required></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Strategic Matchplan Pillar</label>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Matchplan Area</label>
                     <select id="formSection" class="w-full border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
                         <option value="#teamlidl">#teamlidl</option>
                         <option value="Value">Value</option>
@@ -188,8 +269,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Operational Topic</label>
-                    <input type="text" id="formTopic" class="w-full border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., Fluctuation, Lead in Fresh" required>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Focus Area</label>
+                    <input type="text" id="formTopic" class="w-full border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Regional Request / Strategic Suggestion</label>
@@ -203,6 +284,7 @@
         </div>
     </div>
 
+    <!-- MAIN DASHBOARD ENGINE SCRIPT -->
     <script>
         // Data lives in a Google Sheet (see Code.gs); loaded via google.script.run.
         let strategyData = [];
@@ -213,8 +295,11 @@
             "WK23 - 310 NFL", "WK23 - 460 AVO"
         ];
 
+        let selectedRDCs = [];
+        let selectedTopics = [];
         let matrixActivePillar = 'all';
-        let selectedDeepDiveRegion = availableRegions[0];
+        // Multi-select tracking array for Regional Review tab view modes
+        let selectedDeepDiveRegions = ['all'];
         let pillarChartInstance = null, regionChartInstance = null;
 
         function esc(value) {
@@ -228,25 +313,33 @@
             toast.textContent = message;
             toast.className = "fixed top-20 right-4 z-[60] max-w-sm px-4 py-3 rounded-lg shadow-lg text-sm font-semibold "
                 + (isError ? "bg-red-600 text-white" : "bg-slate-800 text-white");
+            toast.classList.remove('hidden');
             clearTimeout(toast._timer);
             toast._timer = setTimeout(() => toast.classList.add('hidden'), 5000);
         }
 
         function initApp() {
             populateFormOptions();
-            renderRegionChips();
+            renderRegionReviewButtons();
             google.script.run
                 .withSuccessHandler(onDataUpdated)
                 .withFailureHandler(err => showToast('Could not load data: ' + err.message, true))
                 .getStrategyData();
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.relative')) {
+                    document.getElementById('rdcDropdown').classList.add('hidden');
+                    document.getElementById('topicDropdown').classList.add('hidden');
+                }
+            });
         }
 
         function onDataUpdated(data) {
             strategyData = data;
-            buildMatrixDropdownSelectors();
+            buildRdcDropdownOptions();
+            buildTopicDropdownOptions();
             rebuildAnalytics();
             syncMatrixFilters();
-            filterByRegion(selectedDeepDiveRegion);
+            filterByRegionMulti();
         }
 
         function findEntry(id) {
@@ -257,16 +350,35 @@
             document.getElementById('formRegion').innerHTML = availableRegions.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
         }
 
-        function buildMatrixDropdownSelectors() {
-            const regionSelect = document.getElementById('matrixRegionFilter');
-            const topicSelect = document.getElementById('matrixTopicFilter');
-            const previousTopic = topicSelect.value;
+        function toggleMultiDropdown(id) {
+            const el = document.getElementById(id);
+            const hidden = el.classList.contains('hidden');
+            document.getElementById('rdcDropdown').classList.add('hidden');
+            document.getElementById('topicDropdown').classList.add('hidden');
+            if (hidden) el.classList.remove('hidden');
+        }
 
-            regionSelect.innerHTML = '<option value="all">All Regions</option>' + availableRegions.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
-
-            const dynamicTopics = [...new Set(strategyData.map(d => d.topic))].sort();
-            topicSelect.innerHTML = '<option value="all">All Topics</option>' + dynamicTopics.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
-            if (dynamicTopics.includes(previousTopic)) topicSelect.value = previousTopic;
+        // BUILD RDC CHECKBOX SELECTIONS EMBEDDING MASTER ALL TOGGLE NATIVELY
+        function buildRdcDropdownOptions() {
+            const container = document.getElementById('rdcDropdown');
+            const isAllChecked = selectedRDCs.length === 0;
+            let html = `
+                <label class="flex items-center space-x-2 px-2 py-1.5 bg-slate-50 border-b border-slate-100 rounded text-xs font-bold uppercase tracking-wider text-slate-500 cursor-pointer select-none">
+                    <input type="checkbox" value="all" ${isAllChecked ? 'checked' : ''} onchange="handleRdcToggle(this)" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                    <span>All RDCs</span>
+                </label>
+            `;
+            html += availableRegions.map(r => {
+                const isChecked = selectedRDCs.includes(r);
+                return `
+                <label class="flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-50 rounded text-sm cursor-pointer select-none">
+                    <input type="checkbox" value="${esc(r)}" ${isChecked && !isAllChecked ? 'checked' : ''} onchange="handleRdcToggle(this)" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                    <span class="text-slate-700">${esc(r.split(' - ')[1] || r)}</span>
+                </label>
+                `;
+            }).join('');
+            container.innerHTML = html;
+            document.getElementById('rdcDropdownLabel').innerText = isAllChecked ? "All RDCs" : `${selectedRDCs.length} Selected`;
         }
 
         function normalizePillar(section) {
@@ -274,6 +386,86 @@
             if (clean === 'OpEx') clean = 'Operational Excellence';
             if (clean === 'Customer') clean = 'Customer Experience';
             return clean;
+        }
+
+        // BUILD FOCUS AREA CHECKBOX SELECTIONS EMBEDDING MASTER ALL TOGGLE NATIVELY
+        // Options are pre-filtered by the selected RDC(s) AND the selected Matchplan Area,
+        // and hybrid "A / B" focus areas are split so each part is offered individually.
+        function buildTopicDropdownOptions() {
+            const container = document.getElementById('topicDropdown');
+            const activeDataPool = strategyData.filter(d => {
+                const matchRdc = selectedRDCs.length === 0 || selectedRDCs.includes(d.region);
+                const matchPillar = matrixActivePillar === 'all'
+                    || d.section.split('/').map(s => normalizePillar(s.trim())).includes(matrixActivePillar);
+                return matchRdc && matchPillar;
+            });
+            const relevantTopics = [...new Set(
+                activeDataPool.flatMap(d => (d.topic || '').split('/').map(t => t.trim()))
+            )].filter(Boolean).sort();
+            selectedTopics = selectedTopics.filter(t => relevantTopics.includes(t));
+            const isAllChecked = selectedTopics.length === 0;
+            if (relevantTopics.length === 0) {
+                container.innerHTML = `<div class="text-xs text-slate-400 p-2 italic text-center">No focus areas match choices</div>`;
+                document.getElementById('topicDropdownLabel').innerText = "No Focus Areas Available";
+                return;
+            }
+            let html = `
+                <label class="flex items-center space-x-2 px-2 py-1.5 bg-slate-50 border-b border-slate-100 rounded text-xs font-bold uppercase tracking-wider text-slate-500 cursor-pointer select-none">
+                    <input type="checkbox" value="all" ${isAllChecked ? 'checked' : ''} onchange="handleTopicToggle(this)" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                    <span>All Focus Areas</span>
+                </label>
+            `;
+            html += relevantTopics.map(t => {
+                const isChecked = selectedTopics.includes(t);
+                return `
+                <label class="flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-50 rounded text-sm cursor-pointer select-none">
+                    <input type="checkbox" value="${esc(t)}" ${isChecked && !isAllChecked ? 'checked' : ''} onchange="handleTopicToggle(this)" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                    <span class="text-slate-700">${esc(t)}</span>
+                </label>
+                `;
+            }).join('');
+            container.innerHTML = html;
+            document.getElementById('topicDropdownLabel').innerText = isAllChecked ? "All Focus Areas" : `${selectedTopics.length} Selected`;
+        }
+
+        function handleRdcToggle(chk) {
+            if (chk.value === 'all') {
+                selectedRDCs = [];
+            } else {
+                if (chk.checked) {
+                    if (!selectedRDCs.includes(chk.value)) selectedRDCs.push(chk.value);
+                } else {
+                    selectedRDCs = selectedRDCs.filter(v => v !== chk.value);
+                }
+            }
+            buildRdcDropdownOptions();
+            buildTopicDropdownOptions();
+            syncMatrixFilters();
+        }
+
+        function handleTopicToggle(chk) {
+            if (chk.value === 'all') {
+                selectedTopics = [];
+            } else {
+                if (chk.checked) {
+                    if (!selectedTopics.includes(chk.value)) selectedTopics.push(chk.value);
+                } else {
+                    selectedTopics = selectedTopics.filter(v => v !== chk.value);
+                }
+            }
+            buildTopicDropdownOptions();
+            syncMatrixFilters();
+        }
+
+        function resetMatrixFilters() {
+            selectedRDCs = [];
+            selectedTopics = [];
+            document.getElementById('globalSearch').value = "";
+            setMatchplanPillar('all');
+            buildRdcDropdownOptions();
+            buildTopicDropdownOptions();
+            syncMatrixFilters();
+            showToast('Filter choices reverted to default values.');
         }
 
         function rebuildAnalytics() {
@@ -284,85 +476,154 @@
             availableRegions.forEach(r => regionCounts[r] = 0);
 
             strategyData.forEach(item => {
-                const cleanSect = normalizePillar(item.section);
-                if (pillarCounts[cleanSect] !== undefined) pillarCounts[cleanSect]++;
+                item.section.split('/').forEach(s => {
+                    const cleanSect = normalizePillar(s.trim());
+                    if (pillarCounts[cleanSect] !== undefined) pillarCounts[cleanSect]++;
+                });
                 if (regionCounts[item.region] !== undefined) regionCounts[item.region]++;
             });
 
             document.getElementById('stat-total').innerText = strategyData.length;
-            document.getElementById('stat-regions').innerText = new Set(strategyData.map(d => d.region)).size;
+            const uniqueCompletedCount = new Set(strategyData.map(d => d.region)).size;
+            document.getElementById('stat-regions').innerText = uniqueCompletedCount + ' of 13';
 
             if (pillarChartInstance) pillarChartInstance.destroy();
             if (regionChartInstance) regionChartInstance.destroy();
 
+            // Vertical column chart with value labels sitting above each column.
             pillarChartInstance = new Chart(document.getElementById('pillarChart').getContext('2d'), {
-                type: 'bar', indexAxis: 'y',
+                type: 'bar',
                 data: { labels: Object.keys(pillarCounts), datasets: [{ data: Object.values(pillarCounts), backgroundColor: '#0050aa', borderRadius: 4 }] },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } }
+                options: {
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 24 } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: { anchor: 'end', align: 'end', offset: 2, clamp: true, color: '#0050aa', font: { weight: 'bold', size: 11 }, formatter: value => value }
+                    },
+                    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { display: false }, ticks: { precision: 0 } } }
+                }
             });
 
+            // Doughnut keeps NO data labels per request.
             regionChartInstance = new Chart(document.getElementById('regionChart').getContext('2d'), {
                 type: 'doughnut',
                 data: { labels: Object.keys(regionCounts).map(r => r.split(' - ')[1] || r), datasets: [{ data: Object.values(regionCounts), backgroundColor: ['#0050aa', '#fff000', '#e2001a', '#22c55e', '#f97316', '#a855f7', '#64748b', '#06b6d4'] }] },
-                options: { maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } } }
+                options: { maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }, datalabels: { display: false } } }
             });
         }
 
-        function renderRegionChips() {
-            document.getElementById('region-chips-container').innerHTML = availableRegions.map(reg => {
-                const brief = reg.split(' - ')[0] + ': ' + (reg.split(' - ')[1] || '');
-                return `<button onclick="filterByRegion('${esc(reg)}')" class="region-chip px-4 py-2 rounded-full border border-slate-300 bg-white text-sm font-semibold hover:border-blue-500 transition-colors" data-region="${esc(reg)}">${esc(brief)}</button>`;
+        // BUILD REGIONAL REVIEW TAB SELECTION INTERACTION PROFILE CONTROL MATRIX BUTTONS
+        function renderRegionReviewButtons() {
+            const container = document.getElementById('region-buttons-container');
+            const isAllActive = selectedDeepDiveRegions.includes('all');
+            let html = `
+                <button onclick="toggleRegionalReviewSelection('all')" class="matchplan-card p-3 rounded-xl text-center text-xs uppercase tracking-wider shadow-sm ${isAllActive ? 'bg-white text-[#0050aa] border border-[#0050aa]' : 'bg-[#0050aa] text-white border border-transparent'}">All RDCs</button>
+            `;
+            html += availableRegions.map(reg => {
+                const isSelected = selectedDeepDiveRegions.includes(reg) && !isAllActive;
+                const labelBrief = reg.split(' - ')[0] + ': ' + (reg.split(' - ')[1] || '');
+                return `
+                <button onclick="toggleRegionalReviewSelection('${esc(reg)}')" class="matchplan-card p-3 rounded-xl text-center text-xs font-semibold tracking-wide transition-all ${isSelected ? 'bg-white text-[#0050aa] border border-[#0050aa] shadow-sm' : 'bg-[#0050aa] text-white border border-transparent'}">${esc(labelBrief)}</button>
+                `;
             }).join('');
+            container.innerHTML = html;
+        }
+
+        function toggleRegionalReviewSelection(regKey) {
+            if (regKey === 'all') {
+                selectedDeepDiveRegions = ['all'];
+            } else {
+                selectedDeepDiveRegions = selectedDeepDiveRegions.filter(v => v !== 'all');
+                if (selectedDeepDiveRegions.includes(regKey)) {
+                    selectedDeepDiveRegions = selectedDeepDiveRegions.filter(v => v !== regKey);
+                } else {
+                    selectedDeepDiveRegions.push(regKey);
+                }
+                if (selectedDeepDiveRegions.length === 0) selectedDeepDiveRegions = ['all'];
+            }
+            renderRegionReviewButtons();
+            filterByRegionMulti();
+        }
+
+        function resetRegionalReviewFilters() {
+            selectedDeepDiveRegions = ['all'];
+            renderRegionReviewButtons();
+            filterByRegionMulti();
+            showToast('Regional filters reverted to default view.');
         }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            document.querySelectorAll('nav button').forEach(btn => btn.id === `btn-${tabId}` ? btn.classList.add('tab-active') : btn.classList.remove('tab-active'));
-            if (tabId === 'explorer') syncMatrixFilters();
-            if (tabId === 'regional') filterByRegion(selectedDeepDiveRegion);
+            ['summary', 'explorer', 'regional'].forEach(id => {
+                const btn = document.getElementById(`btn-${id}`);
+                if (btn) {
+                    if (id === tabId) {
+                        btn.classList.add('tab-active');
+                    } else {
+                        btn.classList.remove('tab-active');
+                    }
+                }
+            });
+            const addPointBtn = document.getElementById('btn-add-point');
+            if (addPointBtn) {
+                if (tabId === 'summary') {
+                    addPointBtn.classList.add('hidden');
+                } else {
+                    addPointBtn.classList.remove('hidden');
+                    addPointBtn.classList.add('inline-block');
+                }
+            }
+            if (tabId === 'explorer') {
+                buildTopicDropdownOptions();
+                syncMatrixFilters();
+            }
+            if (tabId === 'regional') filterByRegionMulti();
         }
 
-        // SIMULTANEOUS MATRIX MULTI-FILTER CORE LOGIC
         function setMatchplanPillar(pillarKey) {
             matrixActivePillar = pillarKey;
             const buttons = { 'all': 'p-all', '#teamlidl': 'p-teamlidl', 'Value': 'p-value', 'Range': 'p-range', 'Customer Experience': 'p-customer', 'Regionality': 'p-regionality', 'Operational Excellence': 'p-opex' };
-
             Object.keys(buttons).forEach(k => {
                 const el = document.getElementById(buttons[k]);
                 if (el) {
                     el.className = (k === pillarKey)
-                        ? "matchplan-card bg-blue-600 text-white p-3 rounded-xl text-center text-xs uppercase tracking-wider shadow-sm"
-                        : "matchplan-card bg-white border text-slate-700 p-3 rounded-xl text-center text-xs tracking-wide";
+                        ? "matchplan-card bg-white text-[#0050aa] border border-[#0050aa] p-3 rounded-xl text-center text-xs tracking-wide shadow-sm"
+                        : "matchplan-card bg-[#0050aa] text-white border border-transparent p-3 rounded-xl text-center text-xs tracking-wide";
                 }
             });
+            buildTopicDropdownOptions();
             syncMatrixFilters();
         }
 
         function syncMatrixFilters() {
             const tbody = document.getElementById('strategy-table-body');
-            const regionVal = document.getElementById('matrixRegionFilter').value;
-            const topicVal = document.getElementById('matrixTopicFilter').value;
             const searchVal = document.getElementById('globalSearch').value.toLowerCase();
             tbody.innerHTML = '';
 
             strategyData.forEach(item => {
-                const cleanSect = normalizePillar(item.section);
+                const itemSections = item.section.split('/').map(s => normalizePillar(s.trim()));
+                const itemTopics = item.topic ? item.topic.split('/').map(t => t.trim()) : [];
 
-                const matchPillar = (matrixActivePillar === 'all' || cleanSect.includes(matrixActivePillar));
-                const matchRegion = (regionVal === 'all' || item.region === regionVal);
-                const matchTopic = (topicVal === 'all' || item.topic === topicVal);
+                const matchPillar = (matrixActivePillar === 'all' || itemSections.includes(matrixActivePillar));
+                const matchRegion = (selectedRDCs.length === 0 || selectedRDCs.includes(item.region));
+                const matchTopic = (selectedTopics.length === 0 || itemTopics.some(t => selectedTopics.includes(t)));
                 const matchSearch = item.suggestion.toLowerCase().includes(searchVal) || item.topic.toLowerCase().includes(searchVal) || item.region.toLowerCase().includes(searchVal);
 
                 if (matchPillar && matchRegion && matchTopic && matchSearch) {
+                    // Hybrid Matchplan Areas / Focus Areas render each "/"-separated part on its own line.
+                    const sectionHtml = itemSections.map(s => esc(s)).join('<br>');
+                    const topicHtml = itemTopics.map(t => esc(t)).join('<br>');
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-slate-900">${esc(item.region.split(' - ')[1] || item.region)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs text-blue-600 font-semibold">${esc(item.topic)}</td>
-                        <td class="px-6 py-4 text-sm text-slate-700 leading-relaxed">${esc(item.suggestion)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-medium space-x-2">
-                            <button onclick="openFormModal('${item.id}')" class="text-blue-600 hover:text-blue-900 font-bold">Edit</button>
-                            <button onclick="deleteEntry('${item.id}')" class="text-red-600 hover:text-red-900 font-bold">Delete</button>
+                        <td class="px-1 py-3 text-[10px] md:text-xs font-bold text-slate-900 break-words align-top">${esc(item.region.split(' - ')[1] || item.region)}</td>
+                        <td class="px-1 py-3 text-[9px] md:text-xs text-slate-500 font-medium break-words align-top leading-tight">${sectionHtml}</td>
+                        <td class="px-1 py-3 text-[9px] md:text-xs text-slate-900 font-medium break-words align-top leading-tight">${topicHtml}</td>
+                        <td class="px-2 py-3 text-xs text-slate-700 leading-normal break-words align-top">${esc(item.suggestion)}</td>
+                        <td class="px-1 py-3 text-right text-[10px] md:text-xs font-bold space-x-2 whitespace-nowrap align-top">
+                            <button onclick="openFormModal('${item.id}')" class="text-blue-600 hover:text-blue-900">Edit</button>
+                            <button onclick="deleteEntry('${item.id}')" class="text-red-600 hover:text-red-900">Delete</button>
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -370,45 +631,67 @@
             });
 
             if (tbody.children.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-sm text-slate-400 italic">No matching strategy points balance this combinatorial matrix request.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="px-2 py-8 text-center text-xs text-slate-400 italic">No regional points found that match the current filter and/or search term.</td></tr>`;
             }
         }
 
-        function filterByRegion(regKey) {
-            selectedDeepDiveRegion = regKey;
+        // RENDER CHRONOLOGICAL MATCHPLAN FLOW CARD SCHEMATICS ENFORCING REDUCED PADDING
+        function filterByRegionMulti() {
             const grid = document.getElementById('region-content-grid');
             grid.innerHTML = '';
+            const isAllActive = selectedDeepDiveRegions.includes('all');
+            const targetRegions = isAllActive ? availableRegions : selectedDeepDiveRegions;
+            // Core corporate Matchplan process flow order array
+            const coreFlowOrder = ['#teamlidl', 'Value', 'Range', 'Customer Experience', 'Regionality', 'Operational Excellence'];
+            let totalPointsRendered = 0;
 
-            document.querySelectorAll('.region-chip').forEach(c => {
-                c.className = (c.getAttribute('data-region') === regKey)
-                    ? "region-chip px-4 py-2 rounded-full border border-transparent bg-blue-600 text-white text-sm font-semibold"
-                    : "region-chip px-4 py-2 rounded-full border border-slate-300 bg-white text-sm font-semibold hover:border-blue-500 transition-colors";
-            });
+            coreFlowOrder.forEach((pillar, pIdx) => {
+                const filteredPoints = strategyData.filter(item => {
+                    const matchReg = targetRegions.includes(item.region);
+                    const primarySect = normalizePillar(item.section.split('/')[0].trim());
+                    return matchReg && primarySect === pillar;
+                });
 
-            strategyData.forEach(p => {
-                if (p.region === regKey) {
-                    const cleanSect = normalizePillar(p.section);
-                    const card = document.createElement('div');
-                    card.className = "bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between";
-                    card.innerHTML = `
-                        <div>
-                            <div class="flex justify-between items-start mb-3">
-                                <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-500">${esc(cleanSect)}</span>
-                                <span class="text-xs font-bold text-lidl-blue">${esc(p.topic)}</span>
+                if (filteredPoints.length > 0) {
+                    totalPointsRendered += filteredPoints.length;
+                    const sectionHeader = document.createElement('div');
+                    sectionHeader.className = "pt-2 pb-1";
+                    sectionHeader.innerHTML = `<h2 class="text-base font-black uppercase tracking-wider text-slate-400">${esc(pillar)}</h2>`;
+                    grid.appendChild(sectionHeader);
+
+                    const sectionCardsGrid = document.createElement('div');
+                    sectionCardsGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2";
+
+                    filteredPoints.forEach(p => {
+                        const card = document.createElement('div');
+                        card.className = "bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between";
+                        card.innerHTML = `
+                            <div>
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 truncate max-w-[60%]">${esc(p.region.split(' - ')[1] || p.region)}</span>
+                                    <span class="text-xs font-bold text-slate-900 truncate max-w-[40%] text-right">${esc(p.topic)}</span>
+                                </div>
+                                <p class="text-xs text-slate-700 leading-relaxed mb-3 break-words">${esc(p.suggestion)}</p>
                             </div>
-                            <p class="text-sm text-slate-800 leading-relaxed mb-4">${esc(p.suggestion)}</p>
-                        </div>
-                        <div class="flex justify-end space-x-3 text-xs border-t pt-3 mt-2">
-                            <button onclick="openFormModal('${p.id}')" class="text-blue-600 hover:underline font-bold">Edit</button>
-                            <button onclick="deleteEntry('${p.id}')" class="text-red-600 hover:underline font-bold">Delete</button>
-                        </div>
-                    `;
-                    grid.appendChild(card);
+                            <div class="flex justify-end space-x-3 text-[11px] border-t border-slate-100 pt-2 mt-1">
+                                <button onclick="openFormModal('${p.id}')" class="text-blue-600 hover:underline font-bold">Edit</button>
+                                <button onclick="deleteEntry('${p.id}')" class="text-red-600 hover:underline font-bold">Delete</button>
+                            </div>
+                        `;
+                        sectionCardsGrid.appendChild(card);
+                    });
+                    grid.appendChild(sectionCardsGrid);
+
+                    if (pIdx < coreFlowOrder.length - 1) {
+                        const hrDelimiter = document.createElement('hr');
+                        hrDelimiter.className = "border-slate-200 my-4";
+                        grid.appendChild(hrDelimiter);
+                    }
                 }
             });
 
-            if (grid.children.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400"><p class="text-3xl mb-2">📍</p><p>No items logged for this region.</p></div>`;
+            if (totalPointsRendered === 0) {
+                grid.innerHTML = `<div class="py-16 text-center text-slate-400"><p class="text-3xl mb-2">\U0001F4CD</p><p class="text-sm italic">No regional strategy points found logged for this collection framework.</p></div>`;
             }
         }
 
@@ -418,14 +701,14 @@
             const entry = id !== null ? findEntry(id) : null;
 
             if (entry) {
-                document.getElementById('modalTitle').innerText = "Edit Strategy Entry";
+                document.getElementById('modalTitle').innerText = "Edit Regional Point";
                 document.getElementById('editId').value = entry.id;
                 document.getElementById('formRegion').value = entry.region;
-                document.getElementById('formSection').value = normalizePillar(entry.section);
+                document.getElementById('formSection').value = normalizePillar(entry.section.split('/')[0].trim());
                 document.getElementById('formTopic').value = entry.topic;
                 document.getElementById('formSuggestion').value = entry.suggestion;
             } else {
-                document.getElementById('modalTitle').innerText = "Add Strategy Entry";
+                document.getElementById('modalTitle').innerText = "Add Regional Point";
                 document.getElementById('editId').value = "";
             }
             modal.classList.remove('hidden');
