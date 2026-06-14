@@ -274,7 +274,7 @@ Use the menu at the top to access two different ways of reviewing the points mad
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Regional Request / Strategic Suggestion</label>
-                    <textarea id="formSuggestion" rows="4" class="w-full border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Provide complete strategic details..." required></textarea>
+                    <textarea id="formSuggestion" rows="4" class="w-full border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Details of the regional point…" required></textarea>
                 </div>
                 <div class="flex justify-end space-x-3 pt-2">
                     <button type="button" onclick="closeFormModal()" class="px-4 py-2 border rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
@@ -502,7 +502,8 @@ Use the menu at the top to access two different ways of reviewing the points mad
                         datalabels: { anchor: 'end', align: 'end', offset: 2, clamp: true, color: '#0050aa', font: { weight: 'bold', size: 11 }, formatter: value => value }
                     },
                     scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { display: false }, ticks: { precision: 0 } } }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
 
             // Doughnut keeps NO data labels per request.
