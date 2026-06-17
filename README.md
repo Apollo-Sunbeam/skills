@@ -172,5 +172,6 @@ Tools I keep around but rarely use.
 
 - **[git-guardrails-claude-code](./skills/misc/git-guardrails-claude-code/SKILL.md)** — Set up Claude Code hooks to block dangerous git commands (push, reset --hard, clean, etc.) before they execute.
 - **[migrate-to-shoehorn](./skills/misc/migrate-to-shoehorn/SKILL.md)** — Migrate test files from `as` type assertions to @total-typescript/shoehorn.
+- **[remove-slides-speaker-notes](./skills/misc/remove-slides-speaker-notes/SKILL.md)** — Generate a Google Apps Script that strips speaker notes from every slide in a Google Slides deck, runnable from a custom toolbar menu.
 - **[scaffold-exercises](./skills/misc/scaffold-exercises/SKILL.md)** — Create exercise directory structures with sections, problems, solutions, and explainers.
 - **[setup-pre-commit](./skills/misc/setup-pre-commit/SKILL.md)** — Set up Husky pre-commit hooks with lint-staged, Prettier, type checking, and tests.
