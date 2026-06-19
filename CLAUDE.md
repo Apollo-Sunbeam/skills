@@ -51,8 +51,8 @@ Skills live under `skills/` in **bucket folders**:
 - Each bucket folder has a `README.md` that lists every skill in the bucket with a one-line
   description, with the skill name linked to its `SKILL.md`.
 
-> Note: `.claude-plugin/plugin.json` currently lists only `engineering/` and `productivity/`
-> skills (14 total). `misc/` skills are referenced in `README.md` but not shipped in the plugin.
+> Note: `.claude-plugin/plugin.json` currently ships 19 skills — mostly `engineering/` and
+> `productivity/`, plus any `misc/` skill explicitly published (e.g. `remove-slides-speaker-notes`).
 > Keep these three lists (plugin.json, root README, bucket README) in sync whenever you
 > add, move, rename, or remove a skill.
 

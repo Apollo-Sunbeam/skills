@@ -11,9 +11,13 @@
     "./skills/engineering/to-prd",
     "./skills/engineering/zoom-out",
     "./skills/engineering/prototype",
+    "./skills/engineering/resolving-merge-conflicts",
+    "./skills/engineering/codebase-design",
+    "./skills/engineering/domain-modeling",
     "./skills/misc/remove-slides-speaker-notes",
     "./skills/productivity/caveman",
     "./skills/productivity/grill-me",
+    "./skills/productivity/grilling",
     "./skills/productivity/handoff",
     "./skills/productivity/write-a-skill"
   ]

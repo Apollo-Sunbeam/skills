@@ -12,3 +12,6 @@ Skills I use daily for code work.
 - **[to-prd](./to-prd/SKILL.md)** — Turn the current conversation context into a PRD and submit it as a GitHub issue.
 - **[zoom-out](./zoom-out/SKILL.md)** — Tell the agent to zoom out and give broader context or a higher-level perspective on an unfamiliar section of code.
 - **[prototype](./prototype/SKILL.md)** — Build a throwaway prototype to flesh out a design — either a runnable terminal app for state/business-logic questions, or several radically different UI variations toggleable from one route.
+- **[resolving-merge-conflicts](./resolving-merge-conflicts/SKILL.md)** — Disciplined loop for an in-progress merge/rebase conflict: understand each side's intent, resolve every hunk, run checks, finish the merge.
+- **[codebase-design](./codebase-design/SKILL.md)** — Shared vocabulary for designing deep modules — interface seams, deepening opportunities, testability, AI-navigability.
+- **[domain-modeling](./domain-modeling/SKILL.md)** — Build and sharpen a project's domain model — pin down the ubiquitous language and record decisions in `CONTEXT.md` and ADRs.
