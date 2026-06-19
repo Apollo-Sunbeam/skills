@@ -1,0 +1,72 @@
+name: Upstream release watch
+
+# Flags new mattpocock/skills releases by opening an issue here so we can review
+# them for cherry-picking. It does NOT auto-merge or auto-port anything —
+# cherry-picking stays a human-in-the-loop step (keep our extras like caveman /
+# zoom-out, skip upstream renames, handle refactors with judgement).
+
+on:
+  schedule:
+    - cron: "0 9 * * *"   # daily at 09:00 UTC
+  workflow_dispatch: {}    # allow manual runs from the Actions tab
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  check-upstream:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      UPSTREAM: mattpocock/skills
+    steps:
+      - name: Find latest upstream release
+        id: rel
+        run: |
+          set -euo pipefail
+          if ! json=$(gh api "repos/$UPSTREAM/releases/latest" 2>/dev/null); then
+            echo "No published release found for $UPSTREAM — nothing to do."
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "tag=$(jq -r '.tag_name' <<<"$json")"   >> "$GITHUB_OUTPUT"
+          echo "name=$(jq -r '.name // .tag_name' <<<"$json")" >> "$GITHUB_OUTPUT"
+          echo "url=$(jq -r '.html_url' <<<"$json")"   >> "$GITHUB_OUTPUT"
+          jq -r '.body // ""' <<<"$json" > /tmp/body.md
+
+      - name: Open a flag issue if this release is new
+        if: steps.rel.outputs.skip != '1'
+        env:
+          TAG: ${{ steps.rel.outputs.tag }}
+          NAME: ${{ steps.rel.outputs.name }}
+          URL: ${{ steps.rel.outputs.url }}
+        run: |
+          set -euo pipefail
+          title="Upstream skills released: $TAG — review for cherry-pick"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state all \
+            --search "in:title \"$TAG\" \"review for cherry-pick\"" --json number --jq 'length')
+          if [ "$existing" != "0" ]; then
+            echo "An issue for $TAG already exists — nothing to do."
+            exit 0
+          fi
+          gh label create upstream-release --color BFD4F2 \
+            --description "New mattpocock/skills release to review for cherry-pick" 2>/dev/null || true
+          {
+            echo "Matt Pocock's upstream skills repo published **$NAME** (\`$TAG\`)."
+            echo
+            echo "Release: $URL"
+            echo
+            echo "## Release notes"
+            echo
+            cat /tmp/body.md
+            echo
+            echo "---"
+            echo "## Cherry-pick checklist"
+            echo "- [ ] Diff upstream \`$TAG\` against our fork"
+            echo "- [ ] Decide what to port — keep our extras (caveman, zoom-out, apps/, personal/); skip upstream renames unless wanted"
+            echo "- [ ] Port files byte-exact; keep \`.claude-plugin/plugin.json\` + root \`README.md\` + bucket READMEs in sync"
+            echo "- [ ] Validate (JSON parses, links resolve) and open a PR"
+          } > /tmp/issue.md
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "$title" --label upstream-release --body-file /tmp/issue.md
