@@ -179,3 +179,9 @@ Tools I keep around but rarely use.
 - **[remove-slides-speaker-notes](./skills/misc/remove-slides-speaker-notes/SKILL.md)** — Generate a Google Apps Script that strips speaker notes from every slide in a Google Slides deck, runnable from a custom toolbar menu.
 - **[scaffold-exercises](./skills/misc/scaffold-exercises/SKILL.md)** — Create exercise directory structures with sections, problems, solutions, and explainers.
 - **[setup-pre-commit](./skills/misc/setup-pre-commit/SKILL.md)** — Set up Husky pre-commit hooks with lint-staged, Prettier, type checking, and tests.
+
+### Personal
+
+Skills tied to a specific setup — published to the plugin for web session access but not intended for general use.
+
+- **[ha-dashboard](./skills/personal/ha-dashboard/SKILL.md)** — Expert Home Assistant Lovelace dashboard designer. Creates beautiful, responsive dashboards across iPhone/iPad/laptop using the full installed HACS card set, keeps live HA and GitHub in sync.
