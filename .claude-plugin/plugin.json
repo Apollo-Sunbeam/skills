@@ -19,6 +19,7 @@
     "./skills/productivity/grill-me",
     "./skills/productivity/grilling",
     "./skills/productivity/handoff",
-    "./skills/productivity/write-a-skill"
+    "./skills/productivity/write-a-skill",
+    "./skills/personal/ha-dashboard"
   ]
 }
