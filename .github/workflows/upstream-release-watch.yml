@@ -1,0 +1,204 @@
+name: Upstream release watch
+
+# Flags new mattpocock/skills activity by opening issues here so we can review
+# and port it. Two detectors:
+#   1. Releases — a new published upstream release opens an "upstream-release"
+#      issue (one per tag).
+#   2. Main drift — upstream commits not yet merged into our fork open (or
+#      refresh) a single rolling "upstream-drift" issue once they cross a
+#      threshold, so batched-but-unreleased work can't pile up unseen.
+# It does NOT auto-merge or auto-port anything — porting stays human-in-the-
+# loop, done as a `git merge upstream/main` per CLAUDE.md "Fork-specific
+# conventions" (keep the fork extras; never cherry-pick files).
+#
+# If the HA_WEBHOOK_URL secret is set, newly created issues are also pushed to
+# Home Assistant (→ Sam's phone) via the skills_upstream_watch_alert webhook
+# relay automation in ha_claude. Skipped silently when the secret is absent.
+
+on:
+  schedule:
+    - cron: "0 9 * * *"   # daily at 09:00 UTC
+  workflow_dispatch: {}    # allow manual runs from the Actions tab
+
+permissions:
+  issues: write
+  contents: read
+
+env:
+  UPSTREAM: mattpocock/skills
+  DRIFT_COMMITS: 10   # flag when this many upstream commits are unmerged...
+  DRIFT_DAYS: 14      # ...or when the oldest unmerged commit is this old
+
+jobs:
+  check-upstream:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure labels exist
+        run: |
+          gh label create upstream-release --repo "$GITHUB_REPOSITORY" --color BFD4F2 \
+            --description "New mattpocock/skills release to review for porting" 2>/dev/null || true
+          gh label create upstream-drift --repo "$GITHUB_REPOSITORY" --color F9D0C4 \
+            --description "Unmerged mattpocock/skills main commits past the drift threshold" 2>/dev/null || true
+
+      # ------------------------------------------------------------------
+      # Detector 1: new upstream release
+      # ------------------------------------------------------------------
+      - name: Find latest upstream release
+        id: rel
+        run: |
+          set -euo pipefail
+          if ! json=$(gh api "repos/$UPSTREAM/releases/latest" 2>/dev/null); then
+            echo "No published release found for $UPSTREAM — nothing to do."
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "tag=$(jq -r '.tag_name' <<<"$json")"   >> "$GITHUB_OUTPUT"
+          echo "name=$(jq -r '.name // .tag_name' <<<"$json")" >> "$GITHUB_OUTPUT"
+          echo "url=$(jq -r '.html_url' <<<"$json")"   >> "$GITHUB_OUTPUT"
+          jq -r '.body // ""' <<<"$json" > /tmp/body.md
+
+      - name: Open a flag issue if this release is new
+        id: relissue
+        if: steps.rel.outputs.skip != '1'
+        env:
+          TAG: ${{ steps.rel.outputs.tag }}
+          NAME: ${{ steps.rel.outputs.name }}
+          URL: ${{ steps.rel.outputs.url }}
+        run: |
+          set -euo pipefail
+          title="Upstream skills released: $TAG — review for porting"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state all \
+            --search "in:title \"$TAG\"" --label upstream-release --json number --jq 'length')
+          if [ "$existing" != "0" ]; then
+            echo "An issue for $TAG already exists — nothing to do."
+            exit 0
+          fi
+          {
+            echo "Matt Pocock's upstream skills repo published **$NAME** (\`$TAG\`)."
+            echo
+            echo "Release: $URL"
+            echo
+            echo "## Release notes"
+            echo
+            cat /tmp/body.md
+            echo
+            echo "---"
+            echo "## Port checklist (merge-based — see CLAUDE.md \"Fork-specific conventions\")"
+            echo "- [ ] \`git merge upstream/main\` on a branch (never cherry-pick files)"
+            echo "- [ ] Restore/keep the fork extras: zoom-out, caveman, remove-slides-speaker-notes, resolving-merge-conflicts (plugin entry), ha-dashboard, apps/, the watch workflow; drop upstream's release.yml"
+            echo "- [ ] Re-sync \`.claude-plugin/plugin.json\` + root \`README.md\` + bucket READMEs (extras re-added)"
+            echo "- [ ] Validate (plugin.json parses + paths resolve, no broken links) and open a PR; merge with a merge commit"
+          } > /tmp/issue.md
+          new_url=$(gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "$title" --label upstream-release --body-file /tmp/issue.md)
+          echo "created_url=$new_url" >> "$GITHUB_OUTPUT"
+          echo "created_title=New upstream skills release: $TAG" >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------------
+      # Detector 2: unmerged upstream main commits (drift)
+      # ------------------------------------------------------------------
+      - name: Measure upstream main drift
+        id: drift
+        run: |
+          set -euo pipefail
+          git remote add upstream "https://github.com/$UPSTREAM" 2>/dev/null || true
+          git fetch -q upstream main
+          count=$(git rev-list --count HEAD..upstream/main)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          if [ "$count" -eq 0 ]; then
+            echo "age_days=0" >> "$GITHUB_OUTPUT"
+            echo "over=0"     >> "$GITHUB_OUTPUT"
+            echo "Fork is up to date with upstream/main."
+            exit 0
+          fi
+          oldest=$(git rev-list HEAD..upstream/main | tail -1)
+          oldest_ts=$(git show -s --format=%ct "$oldest")
+          age_days=$(( ( $(date +%s) - oldest_ts ) / 86400 ))
+          echo "age_days=$age_days" >> "$GITHUB_OUTPUT"
+          base=$(git merge-base HEAD upstream/main)
+          echo "compare_url=https://github.com/$UPSTREAM/compare/${base:0:12}...main" >> "$GITHUB_OUTPUT"
+          git log --oneline HEAD..upstream/main | head -20 > /tmp/drift-commits.txt
+          if [ "$count" -ge "$DRIFT_COMMITS" ] || [ "$age_days" -ge "$DRIFT_DAYS" ]; then
+            echo "over=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "over=0" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Drift: $count commits, oldest ${age_days}d."
+
+      - name: Open, refresh, or close the drift issue
+        id: driftissue
+        env:
+          COUNT: ${{ steps.drift.outputs.count }}
+          AGE: ${{ steps.drift.outputs.age_days }}
+          OVER: ${{ steps.drift.outputs.over }}
+          COMPARE: ${{ steps.drift.outputs.compare_url }}
+        run: |
+          set -euo pipefail
+          open_num=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --label upstream-drift --json number --jq '.[0].number // empty')
+          if [ "$OVER" != "1" ]; then
+            if [ -n "$open_num" ]; then
+              gh issue close "$open_num" --repo "$GITHUB_REPOSITORY" \
+                --comment "Drift is back under the threshold ($COUNT unmerged commits) — closing."
+            fi
+            echo "Drift under threshold ($COUNT commits, ${AGE}d) — nothing to flag."
+            exit 0
+          fi
+          {
+            echo "Upstream \`$UPSTREAM\` main has **$COUNT commits** our fork hasn't merged; the oldest is **${AGE} days** old. These are on main but (mostly) unreleased, so the release watch alone won't flag them."
+            echo
+            echo "Compare: $COMPARE"
+            echo
+            echo "## Latest unmerged commits (up to 20)"
+            echo '```'
+            cat /tmp/drift-commits.txt
+            echo '```'
+            echo
+            echo "Port per CLAUDE.md \"Fork-specific conventions\": \`git merge upstream/main\`, keep the fork extras, re-sync the lists, PR, merge commit."
+            echo
+            echo "_This issue is refreshed daily by the Upstream release watch workflow and closes itself when the fork catches up._"
+          } > /tmp/drift-issue.md
+          if [ -n "$open_num" ]; then
+            gh issue edit "$open_num" --repo "$GITHUB_REPOSITORY" --body-file /tmp/drift-issue.md
+            echo "Refreshed drift issue #$open_num."
+          else
+            new_url=$(gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "Upstream drift: unmerged mattpocock/skills commits" \
+              --label upstream-drift --body-file /tmp/drift-issue.md)
+            echo "created_url=$new_url" >> "$GITHUB_OUTPUT"
+            echo "created_title=Skills upstream drift: $COUNT unmerged commits" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ------------------------------------------------------------------
+      # Phone notification via Home Assistant (only for newly created issues)
+      # ------------------------------------------------------------------
+      - name: Notify Home Assistant
+        if: steps.relissue.outputs.created_url != '' || steps.driftissue.outputs.created_url != ''
+        env:
+          HA_WEBHOOK_URL: ${{ secrets.HA_WEBHOOK_URL }}
+          REL_TITLE: ${{ steps.relissue.outputs.created_title }}
+          REL_URL: ${{ steps.relissue.outputs.created_url }}
+          DRIFT_TITLE: ${{ steps.driftissue.outputs.created_title }}
+          DRIFT_URL: ${{ steps.driftissue.outputs.created_url }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HA_WEBHOOK_URL:-}" ]; then
+            echo "HA_WEBHOOK_URL secret not set — skipping phone notification."
+            exit 0
+          fi
+          notify() {
+            jq -n --arg t "$1" --arg m "$2" --arg u "$3" \
+              '{title: $t, message: $m, url: $u}' \
+              | curl -sf -m 20 -X POST -H 'Content-Type: application/json' -d @- "$HA_WEBHOOK_URL" \
+              || echo "WARNING: webhook POST failed (issue is still filed on GitHub)"
+          }
+          [ -n "$REL_URL" ]   && notify "Skills upstream release" "$REL_TITLE — review for porting" "$REL_URL"
+          [ -n "$DRIFT_URL" ] && notify "Skills upstream drift" "$DRIFT_TITLE — fork falling behind upstream main" "$DRIFT_URL"
+          exit 0
