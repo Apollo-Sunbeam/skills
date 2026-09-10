@@ -18,13 +18,16 @@
     "./skills/engineering/code-review",
     "./skills/engineering/resolving-merge-conflicts",
     "./skills/engineering/zoom-out",
+    "./skills/misc/git-guardrails-claude-code",
+    "./skills/misc/migrate-to-shoehorn",
     "./skills/misc/remove-slides-speaker-notes",
+    "./skills/misc/scaffold-exercises",
+    "./skills/misc/setup-pre-commit",
     "./skills/productivity/caveman",
     "./skills/productivity/grill-me",
     "./skills/productivity/grilling",
     "./skills/productivity/handoff",
     "./skills/productivity/teach",
-    "./skills/productivity/writing-great-skills",
-    "./skills/personal/ha-dashboard"
+    "./skills/productivity/writing-great-skills"
   ]
 }
